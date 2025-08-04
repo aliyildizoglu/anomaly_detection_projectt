@@ -22,8 +22,7 @@ Bu proje, farklı veri setlerinde anormal (anomaly) verileri tespit etmek için 
 ## Kullanılan Veri Setleri
 
 - **KDD Cup 1999:** Ağ saldırıları ve anormallik tespiti için yaygın kullanılan benchmark veri seti.  
-- **Credit Card Fraud Detection Dataset:** Finansal işlemlerdeki dolandırıcılık anormalliklerini içerir.  
-- **NASA Shuttle Dataset:** Uzay mekiği sistemindeki anormalliklerin tespiti için kullanılır.  
+
 
 (*Not: Veri setleri projede yer almamakta olup, kullanıcı tarafından temin edilmelidir.*)
 
