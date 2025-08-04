@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <!-- Define character encoding for proper text rendering -->
+    <meta charset="UTF-8">
+    <!-- Ensure responsive design across devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anomali Tespit Sistemi Sonuçları</title>
+    <style>
+        /* Import custom font */
+        @font-face {
+            font-family: 'NotoSans';
+            src: url('/static/fonts/NotoSans-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* Global styles for consistent typography and layout */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'NotoSans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #d6e0ff, #e6f0fa); /* Refined gradient for elegance */
+            color: #1e2a44;
+            line-height: 1.7;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Navigation bar */
+        .navbar {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            max-width: 1000px;
+            background: linear-gradient(45deg, #007bff, #00c4ff);
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 10px 15px;
+            border-radius: 6px;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .navbar a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Main container for content */
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12); /* Enhanced shadow */
+            padding: 40px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Heading styles */
+        h1 {
+            color: #1a3c6d;
+            font-size: 2.8rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            color: #1a3c6d;
+            font-size: 2rem;
+            font-weight: 600;
+            text-align: center;
+            margin: 50px 0 25px;
+            position: relative;
+        }
+
+        h2::after {
+            content: '';
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(45deg, #007bff, #00c4ff);
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        /* Section styling for content grouping */
+        .section {
+            margin-bottom: 70px;
+            padding: 30px;
+            background: #f8fafc;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            page-break-inside: avoid;
+            transition: background 0.3s ease;
+        }
+
+        .section:hover {
+            background: #f0f4f8;
+        }
+
+        /* Table styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            border: 1px solid #dfe6e9;
+            padding: 14px;
+            text-align: center;
+            font-size: 1rem;
+            color: #2d3748;
+        }
+
+        th {
+            background: linear-gradient(45deg, #007bff, #00c4ff);
+            color: #ffffff;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            background-color: #f9fafb;
+        }
+
+        /* Image container with loading animation */
+        .image-container {
+            position: relative;
+            max-width: 90%;
+            margin: 25px auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        img {
+            display: block;
+            width: 100%;
+            border-radius: 10px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            opacity: 0; /* Start hidden for loading animation */
+        }
+
+        img.loaded {
+            opacity: 1; /* Fade in when loaded */
+            transform: scale(1.01);
+        }
+
+        /* Tooltip for images */
+        .image-container::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .image-container:hover::before {
+            opacity: 1;
+        }
+
+        /* Button styles */
+        .button {
+            display: inline-block;
+            padding: 12px 28px;
+            background: linear-gradient(45deg, #007bff, #00c4ff);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            margin: 10px;
+        }
+
+        .button:hover {
+            background: linear-gradient(45deg, #0056b3, #0096cc);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+
+        /* Responsive design for smaller screens */
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+                margin: 15px;
+            }
+
+            .navbar {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            h1 {
+                font-size: 2.2rem;
+            }
+
+            h2 {
+                font-size: 1.7rem;
+            }
+
+            .image-container {
+                max-width: 100%;
+            }
+
+            th, td {
+                font-size: 0.9rem;
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar a {
+                display: block;
+                margin: 5px 0;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            h2 {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation bar -->
+    <nav class="navbar">
+        <a href="#cicids2017">CICIDS2017</a>
+        <a href="#kdd99">KDD99</a>
+        <a href="#unsw-nb15">UNSW-NB15</a>
+        <a href="#user-traffic">Kullanıcı Trafiği</a>
+        <a href="/" class="button">🏠 Anasayfaya Dön</a>
+        <a href="/download-pdf" class="button">📥 Raporu İndir</a>
+    </nav>
+
+    <!-- Main content container -->
+    <div class="container">
+        <h1>📊 Anomali Tespit Sistemi Sonuçları</h1>
+
+        <!-- CICIDS2017 Results Section -->
+        <div class="section" id="cicids2017">
+            <h2>CICIDS2017 Sonuçları</h2>
+            {{ cic_table|safe }}
+            <div class="image-container" data-tooltip="CICIDS2017 Confusion Matrix">
+                <img src="static/plots/confusion_matrix.png" alt="CICIDS2017 Confusion Matrix" onload="this.classList.add('loaded')">
+            </div>
+            <div class="image-container" data-tooltip="CICIDS2017 ROC Curve">
+                <img src="static/plots/roc_curve.png" alt="CICIDS2017 ROC Curve" onload="this.classList.add('loaded')">
+            </div>
+            <div class="image-container" data-tooltip="CICIDS2017 Feature Importance">
+                <img src="static/plots/feature_importance.png" alt="CICIDS2017 Feature Importance" onload="this.classList.add('loaded')">
+            </div>
+        </div>
+
+        <!-- KDD99 Results Section -->
+        <div class="section" id="kdd99">
+            <h2>KDD99 Sonuçları</h2>
+            {{ kdd_table|safe }}
+            <div class="image-container" data-tooltip="KDD99 Confusion Matrix">
+                <img src="static/plots/kdd_confusion_matrix.png" alt="KDD99 Confusion Matrix" onload="this.classList.add('loaded')">
+            </div>
+            <div class="image-container" data-tooltip="KDD99 ROC Curve">
+                <img src="static/plots/kdd_roc_curve.png" alt="KDD99 ROC Curve" onload="this.classList.add('loaded')">
+            </div>
+            <div class="image-container" data-tooltip="KDD99 Feature Importance">
+                <img src="static/plots/kdd_feature_importance.png" alt="KDD99 Feature Importance" onload="this.classList.add('loaded')">
+            </div>
+        </div>
+
+        <!-- UNSW-NB15 Results Section -->
+        <div class="section" id="unsw-nb15">
+            <h2>UNSW-NB15 Sonuçları</h2>
+            {{ unsw_table|safe }}
+            <div class="image-container" data-tooltip="UNSW-NB15 Confusion Matrix">
+                <img src="static/plots/unsw_confusion_matrix.png" alt="UNSW-NB15 Confusion Matrix" onload="this.classList.add('loaded')">
+            </div>
+            <div class="image-container" data-tooltip="UNSW-NB15 ROC Curve">
+                <img src="static/plots/unsw_roc_curve.png" alt="UNSW-NB15 ROC Curve" onload="this.classList.add('loaded')">
+            </div>
+            <div class="image-container" data-tooltip="UNSW-NB15 Feature Importance">
+                <img src="static/plots/unsw_feature_importance.png" alt="UNSW-NB15 Feature Importance" onload="this.classList.add('loaded')">
+            </div>
+        </div>
+
+        <!-- User Traffic Analysis Section -->
+        <div class="section" id="user-traffic">
+            <h2>🌐 Kullanıcı Trafik Analizi</h2>
+            <div class="image-container" data-tooltip="Protocol Distribution">
+                <img src="static/plots/user_protocol_distribution.png" alt="User Protocol Distribution" onload="this.classList.add('loaded')">
+            </div>
+            <div class="image-container" data-tooltip="Packet Length Histogram">
+                <img src="static/plots/user_packet_length_hist.png" alt="User Packet Length Histogram" onload="this.classList.add('loaded')">
+            </div>
+            <div class="image-container" data-tooltip="Anomaly Scatter Plot">
+                <img src="static/plots/user_anomaly_scatter.png" alt="User Anomaly Scatter Plot" onload="this.classList.add('loaded')">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scroll for navigation links
+        document.querySelectorAll('.navbar a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    </script>
+</body>
+</html>

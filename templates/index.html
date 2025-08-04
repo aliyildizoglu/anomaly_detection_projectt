@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <!-- Define character encoding for proper text rendering -->
+    <meta charset="UTF-8">
+    <!-- Ensure responsive design across devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ağ Anomali Tespit Sistemi</title>
+    <style>
+        /* Import custom font for consistent, modern typography */
+        @font-face {
+            font-family: 'NotoSans';
+            src: url('/static/fonts/NotoSans-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* Global styles for consistent layout and resets */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Body styling for overall page appearance */
+        body {
+            font-family: 'NotoSans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #d6e0ff; /* Solid fallback for xhtml2pdf */
+            color: #2c3e50;
+            line-height: 1.7;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Hero background overlay for visual depth */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(224, 231, 255, 0.8), rgba(244, 246, 248, 0.8));
+            z-index: -1;
+        }
+
+        /* Dark mode styles for accessibility and user preference */
+        body.dark-mode {
+            background: #2d3748;
+            color: #e2e8f0;
+        }
+
+        body.dark-mode::before {
+            background: linear-gradient(135deg, rgba(45, 55, 72, 0.8), rgba(74, 85, 104, 0.8));
+        }
+
+        body.dark-mode .container,
+        body.dark-mode .upload-container,
+        body.dark-mode .faq-section,
+        body.dark-mode .how-it-works,
+        body.dark-mode .anomaly-status.anomaly,
+        body.dark-mode .anomaly-status.normal {
+            background-color: #2d3748;
+            color: #e2e8f0;
+        }
+
+        body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode p {
+            color: #90cdf4;
+        }
+
+        /* Main container for primary content */
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 40px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+            text-align: center;
+            z-index: 1;
+        }
+
+        /* Hero section for introductory content */
+        .hero {
+            margin-bottom: 40px;
+        }
+
+        /* Heading styles for visual hierarchy */
+        h1 {
+            color: #1a3c6d;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            color: #1a3c6d;
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h3 {
+            color: #1a3c6d;
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 1.2rem;
+            color: #4a5568;
+            margin-bottom: 30px;
+            line-height: 1.9;
+        }
+
+        /* Feature list styling with collapsible functionality */
+        .features {
+            margin: 20px 0;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+            display: inline-block;
+        }
+
+        li {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            padding-left: 35px;
+            position: relative;
+            color: #2d3748;
+        }
+
+        /* Checkmark icon as a span for xhtml2pdf compatibility */
+        .checkmark {
+            position: absolute;
+            left: 0;
+            color: #007bff;
+            font-size: 1.3rem;
+        }
+
+        body.dark-mode .checkmark, body.dark-mode .collapse-icon {
+            color: #90cdf4;
+        }
+
+        /* Collapsible feature list */
+        .features.collapsed .feature-content {
+            display: none;
+        }
+
+        .features h2 .collapse-icon {
+            font-size: 1.3rem;
+            margin-right: 10px;
+            color: #007bff;
+        }
+
+        /* Button styles for navigation and actions */
+        a.button, .upload-container button {
+            display: inline-block;
+            padding: 14px 32px;
+            background: #007bff; /* Solid color for xhtml2pdf */
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 10px;
+            position: relative;
+        }
+
+        a.button:hover, .upload-container button:hover {
+            background: #0056b3;
+        }
+
+        /* Link list for navigation */
+        .link-list {
+            margin-top: 40px;
+        }
+
+        .link-list a {
+            display: inline-block;
+            margin: 10px;
+            padding: 12px 24px;
+            background: #17a2b8;
+            color: #ffffff;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            position: relative;
+        }
+
+        .link-list a:hover {
+            background: #117a8b;
+        }
+
+        /* Tooltips for buttons and links */
+        a.button .tooltip, .link-list a .tooltip, .upload-container button .tooltip, .upload-container input[type="file"] + .tooltip {
+            position: absolute;
+            top: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            opacity: 0;
+            pointer-events: none;
+            max-width: 200px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        a.button:hover .tooltip, .link-list a:hover .tooltip, .upload-container button:hover .tooltip, .upload-container input[type="file"]:hover + .tooltip {
+            opacity: 1;
+            top: -35px;
+        }
+
+        /* Upload container styling */
+        .upload-container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 40px;
+            background-color: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+            text-align: center;
+            position: relative;
+        }
+
+        .upload-container input[type="file"] {
+            padding: 14px;
+            border: 2px solid #e2e8f0;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            background-color: #f7fafc;
+        }
+
+        .upload-container input[type="file"]:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        /* Loading spinner for form submission */
+        .upload-container.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #007bff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Progress bar for simulated file upload */
+        .progress-bar {
+            display: none;
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar.active {
+            display: block;
+        }
+
+        .progress-bar::after {
+            content: '';
+            display: block;
+            width: 0;
+            height: 100%;
+            background: #007bff;
+            animation: progress 2s ease-in-out infinite;
+        }
+
+        @keyframes progress {
+            0% { width: 0; }
+            50% { width: 80%; }
+            100% { width: 0; }
+        }
+
+        /* Anomaly status notification */
+        .anomaly-status {
+            margin: 20px auto;
+            max-width: 500px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .anomaly-status.anomaly {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+
+        .anomaly-status.normal {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+
+        /* FAQ section styling */
+        .faq-section {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 40px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+            text-align: left;
+        }
+
+        .faq-item {
+            margin-bottom: 20px;
+        }
+
+        .faq-item h3 {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .faq-item h3 .collapse-icon {
+            font-size: 1.2rem;
+            margin-right: 10px;
+            color: #007bff;
+        }
+
+        .faq-item.collapsed .faq-content {
+            display: none;
+        }
+
+        .faq-content {
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        /* How It Works section styling */
+        .how-it-works {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 40px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+            text-align: left;
+        }
+
+        .step {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .step h3 {
+            display: flex;
+            align-items: center;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            background: #007bff;
+            color: #ffffff;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        /* Theme toggle button */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #007bff;
+            color: #ffffff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            background: #0056b3;
+        }
+
+        /* Responsive design for smaller screens */
+        @media (max-width: 768px) {
+            .container, .upload-container, .faq-section, .how-it-works {
+                margin: 20px;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            h2 {
+                font-size: 1.8rem;
+            }
+
+            .link-list a {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            h3 {
+                font-size: 1.3rem;
+            }
+
+            .theme-toggle {
+                top: 10px;
+                right: 10px;
+            }
+        }
+
+        /* Simplified styles for xhtml2pdf compatibility */
+        @media print {
+            .theme-toggle, .tooltip, .upload-container::after, .progress-bar {
+                display: none; /* Hide interactive elements in PDF */
+            }
+
+            .features.collapsed .feature-content, .faq-item.collapsed .faq-content {
+                display: block; /* Show all content in PDF */
+            }
+
+            .collapse-icon {
+                display: none; /* Hide collapsible icons in PDF */
+            }
+
+            body, .container, .upload-container, .faq-section, .how-it-works, .anomaly-status.anomaly, .anomaly-status.normal {
+                background: #ffffff;
+                color: #000000;
+                box-shadow: none;
+            }
+
+            body::before {
+                display: none; /* Remove overlay in PDF */
+            }
+
+            h1, h2, h3, p {
+                color: #000000;
+            }
+
+            a.button, .link-list a, .upload-container button {
+                background: #007bff;
+                color: #ffffff;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme toggle button for light/dark mode -->
+    <button class="theme-toggle" aria-label="Tema değiştir">🌙 Koyu Tema</button>
+
+    <!-- Main content container -->
+    <div class="container" role="main">
+        <div class="hero">
+            <h1>Ağ Anomali Tespit Sistemi</h1>
+            <p>
+                Bu sistem, ağ trafiği analizinde devrim yaratmak için tasarlanmıştır. Makine öğrenmesi ve istatistiksel yöntemler kullanarak anormal ağ paketlerini tespit eder, ağ güvenliğinizi güçlendirir ve performansınızı optimize eder.
+                <strong>CICIDS2017</strong>, <strong>KDD99</strong> ve <strong>UNSW-NB15</strong> gibi standart veri setlerini analiz ederek modellerin doğruluğunu karşılaştırır.
+                Kullanıcılar, kendi PCAP veya CSV dosyalarını yükleyerek gerçek zamanlı grafiksel analizler elde edebilir, anomalileri tespit edebilir ve sonuçları PDF formatında dışa aktarabilir.
+            </p>
+        </div>
+
+        <!-- Feature list with collapsible functionality -->
+        <div class="features">
+            <h2 tabindex="0"><span class="collapse-icon">-</span>Özellikler</h2>
+            <div class="feature-content">
+                <ul>
+                    <li><span class="checkmark">✔</span>Makine öğrenmesi tabanlı sınıflandırma (Random Forest, SVM, XGBoost) ile yüksek doğruluklu anomali tespiti.</li>
+                    <li><span class="checkmark">✔</span>Anomali tespiti için Isolation Forest ve One-Class SVM gibi ileri teknikler.</li>
+                    <li><span class="checkmark">✔</span>Confusion Matrix, ROC Curve ve Feature Importance grafikleri ile model performansını görselleştirme.</li>
+                    <li><span class="checkmark">✔</span>Gerçek zamanlı trafik analizi ve kullanıcı dostu görselleştirmeler.</li>
+                    <li><span class="checkmark">✔</span>Analiz sonuçlarının PDF formatında kolayca dışa aktarılması.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Navigation links -->
+        <div class="link-list">
+            <a href="/results"><span class="tooltip">Model sonuçlarını görüntüle</span>📊 Model Sonuçları</a>
+            <a href="/traffic-analysis"><span class="tooltip">Trafik analizini görüntüle</span>🌐 Trafik Analizi</a>
+            <a href="/download-pdf" class="button"><span class="tooltip">Analiz raporunu PDF olarak indir</span>📥 PDF Raporunu İndir</a>
+        </div>
+    </div>
+
+    <!-- File upload section -->
+    <div class="upload-container" role="complementary">
+        <!-- Display anomaly status if available -->
+        {% if anomaly_status %}
+        <div class="anomaly-status {% if anomaly_status == 'Anomali VAR' %}anomaly{% else %}normal{% endif %}">
+            {{ anomaly_status }}
+        </div>
+        {% endif %}
+
+        <h2>📂 Kendi Trafik Verinizi Yükleyin</h2>
+        <p>
+            PCAP veya CSV formatındaki ağ trafiği verilerinizi yükleyerek anomali tespit analizini başlatabilirsiniz. Sistem, verilerinizi hızlıca işler ve detaylı grafiksel sonuçlar sunar.
+        </p>
+
+        <!-- File upload form -->
+        <form action="/upload-traffic" method="POST" enctype="multipart/form-data" id="upload-form">
+            <div class="file-input-wrapper">
+                <input type="file" name="file" accept=".csv,.pcap" required aria-label="PCAP veya CSV dosyası seçin">
+                <span class="tooltip">PCAP veya CSV dosyası seçin</span>
+            </div>
+            <button type="submit"><span class="tooltip">Analizi başlat</span>🚀 Trafik Analizini Başlat</button>
+            <div class="progress-bar"></div>
+        </form>
+    </div>
+
+    <!-- FAQ section for user education -->
+    <div class="faq-section" role="complementary">
+        <h2>Sıkça Sorulan Sorular</h2>
+        <div class="faq-item">
+            <h3 tabindex="0"><span class="collapse-icon">-</span>Hangi dosya formatları destekleniyor?</h3>
+            <div class="faq-content">
+                <p>Sistem, PCAP ve CSV formatındaki ağ trafiği verilerini destekler. PCAP dosyaları genellikle Wireshark gibi araçlarla oluşturulur, CSV dosyaları ise yapılandırılmış veri içermelidir.</p>
+            </div>
+        </div>
+        <div class="faq-item">
+            <h3 tabindex="0"><span class="collapse-icon">-</span>Analiz ne kadar sürer?</h3>
+            <div class="faq-content">
+                <p>Analiz süresi, dosya boyutuna ve veri karmaşıklığına bağlıdır. Küçük dosyalar birkaç saniye içinde işlenirken, büyük dosyalar bir dakikaya kadar sürebilir.</p>
+            </div>
+        </div>
+        <div class="faq-item">
+            <h3 tabindex="0"><span class="collapse-icon">-</span>Anomali tespiti nasıl çalışır?</h3>
+            <div class="faq-content">
+                <p>Sistem, Isolation Forest ve One-Class SVM gibi makine öğrenmesi algoritmalarını kullanarak anormal ağ aktivitelerini tespit eder. Anormal paketler, örneğin DDoS saldırıları veya kötü amaçlı yazılımlar, grafiklerde vurgulanır.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works section for user guidance -->
+    <div class="how-it-works" role="complementary">
+        <h2>Nasıl Çalışır?</h2>
+        <div class="step">
+            <h3><span class="step-number">1</span>Veri Yükleme</h3>
+            <p>PCAP veya CSV formatında ağ trafiği verilerinizi yükleyin. Dosyanız güvenli bir şekilde işlenir.</p>
+        </div>
+        <div class="step">
+            <h3><span class="step-number">2</span>Analiz Süreci</h3>
+            <p>Sistem, makine öğrenmesi modellerini kullanarak verilerinizi analiz eder ve anomalileri tespit eder.</p>
+        </div>
+        <div class="step">
+            <h3><span class="step-number">3</span>Sonuçları Görüntüleme</h3>
+            <p>Protokol dağılımı, paket uzunlukları ve anomali grafikleri gibi detaylı görselleştirmeleri inceleyin.</p>
+        </div>
+        <div class="step">
+            <h3><span class="step-number">4</span>Rapor İndirme</h3>
+            <p>Analiz sonuçlarını PDF formatında indirerek paylaşabilir veya arşivleyebilirsiniz.</p>
+        </div>
+    </div>
+
+    <script>
+        // Toggle dark mode for enhanced user experience
+        const themeToggle = document.querySelector('.theme-toggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            themeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️ Açık Tema' : '🌙 Koyu Tema';
+            // Update collapse icons for dark mode
+            document.querySelectorAll('.collapse-icon').forEach(icon => {
+                icon.style.color = document.body.classList.contains('dark-mode') ? '#90cdf4' : '#007bff';
+            });
+        });
+
+        // Collapsible feature list
+        const featuresHeader = document.querySelector('.features h2');
+        featuresHeader.addEventListener('click', () => {
+            const features = featuresHeader.parentElement;
+            features.classList.toggle('collapsed');
+            const icon = featuresHeader.querySelector('.collapse-icon');
+            icon.textContent = features.classList.contains('collapsed') ? '+' : '-';
+        });
+        featuresHeader.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                featuresHeader.click();
+            }
+        });
+
+        // Collapsible FAQ items
+        document.querySelectorAll('.faq-item h3').forEach(header => {
+            header.addEventListener('click', () => {
+                const faqItem = header.parentElement;
+                faqItem.classList.toggle('collapsed');
+                const icon = header.querySelector('.collapse-icon');
+                icon.textContent = faqItem.classList.contains('collapsed') ? '+' : '-';
+            });
+            header.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    header.click();
+                }
+            });
+        });
+
+        // Form submission loading state and progress bar
+        const form = document.getElementById('upload-form');
+        form.addEventListener('submit', () => {
+            form.closest('.upload-container').classList.add('loading');
+            const progressBar = form.querySelector('.progress-bar');
+            progressBar.classList.add('active');
+        });
+    </script>
+</body>
+</html>

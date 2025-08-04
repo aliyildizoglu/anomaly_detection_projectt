@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <!-- Define character encoding for proper text rendering -->
+    <meta charset="UTF-8">
+    <!-- Ensure responsive design across devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ağ Trafik Analizi</title>
+    <style>
+        /* Import custom font for consistent, modern typography */
+        @font-face {
+            font-family: 'NotoSans';
+            src: url('/static/fonts/NotoSans-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* Global styles for consistent layout and resets */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'NotoSans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #d6e0ff; /* Solid fallback for xhtml2pdf */
+            color: #2c3e50;
+            line-height: 1.7;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Hero background overlay for visual appeal */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(224, 231, 255, 0.8), rgba(244, 246, 248, 0.8));
+            z-index: -1;
+        }
+
+        /* Dark mode styles for accessibility */
+        body.dark-mode {
+            background: #2d3748;
+            color: #e2e8f0;
+        }
+
+        body.dark-mode::before {
+            background: linear-gradient(135deg, rgba(45, 55, 72, 0.8), rgba(74, 85, 104, 0.8));
+        }
+
+        body.dark-mode .container, body.dark-mode .image-section, body.dark-mode figcaption {
+            background-color: #2d3748;
+            color: #e2e8f0;
+        }
+
+        body.dark-mode h1, body.dark-mode p, body.dark-mode figcaption {
+            color: #90cdf4;
+        }
+
+        /* Main container for content */
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 40px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+            text-align: center;
+            z-index: 1;
+        }
+
+        /* Heading styles with enhanced typography */
+        h1 {
+            color: #1a3c6d;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        p {
+            font-size: 1.2rem;
+            color: #4a5568;
+            margin-bottom: 30px;
+            line-height: 1.9;
+        }
+
+        /* Image section with collapsible functionality */
+        .image-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .image-section.collapsed .image-content {
+            display: none;
+        }
+
+        .image-section h2 {
+            color: #1a3c6d;
+            font-size: 1.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .image-section h2 .collapse-icon {
+            font-size: 1.3rem;
+            margin-right: 10px;
+            color: #007bff;
+        }
+
+        body.dark-mode .collapse-icon {
+            color: #90cdf4;
+        }
+
+        /* Image container with loading spinner and tooltip */
+        .image-container {
+            position: relative;
+            max-width: 600px;
+            margin: 20px auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        img {
+            display: block;
+            width: 100%;
+            border-radius: 10px;
+            opacity: 0;
+        }
+
+        img.loaded {
+            opacity: 1;
+        }
+
+        /* Loading spinner for images */
+        .image-container::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #007bff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        .image-container.loading::after {
+            display: block;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Image captions for detailed explanations */
+        figcaption {
+            font-size: 1rem;
+            color: #4a5568;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 6px;
+            text-align: left;
+        }
+
+        /* Tooltip for images */
+        .image-container .tooltip {
+            position: absolute;
+            top: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            opacity: 0;
+            pointer-events: none;
+            max-width: 300px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .image-container:hover .tooltip {
+            opacity: 1;
+            top: -35px;
+        }
+
+        /* Navigation link styles */
+        .nav-link {
+            display: inline-block;
+            padding: 12px 28px;
+            background: #007bff;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: #0056b3;
+        }
+
+        .nav-link .tooltip {
+            position: absolute;
+            top: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            opacity: 0;
+            pointer-events: none;
+            max-width: 200px;
+            text-align: center;
+        }
+
+        .nav-link:hover .tooltip {
+            opacity: 1;
+            top: -35px;
+        }
+
+        /* Modal for zoomed images */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            opacity: 1;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #ffffff;
+            font-size: 2rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        /* Theme toggle button */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #007bff;
+            color: #ffffff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            background: #0056b3;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .image-container {
+                max-width: 100%;
+            }
+
+            .image-section h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .image-section h2 {
+                font-size: 1.3rem;
+            }
+
+            .nav-link {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+
+            .theme-toggle {
+                top: 10px;
+                right: 10px;
+            }
+        }
+
+        /* Simplified styles for xhtml2pdf compatibility */
+        @media print {
+            .theme-toggle, .modal, .tooltip, .image-container::after {
+                display: none; /* Hide interactive elements in PDF */
+            }
+
+            .image-section.collapsed .image-content {
+                display: block; /* Show all images in PDF */
+            }
+
+            .collapse-icon {
+                display: none; /* Hide collapsible icons in PDF */
+            }
+
+            body, .container, .image-section, figcaption {
+                background: #ffffff;
+                color: #000000;
+                box-shadow: none;
+            }
+
+            body::before {
+                display: none; /* Remove overlay in PDF */
+            }
+
+            h1, p, figcaption {
+                color: #000000;
+            }
+
+            .nav-link {
+                background: #007bff;
+                color: #ffffff;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme toggle button for light/dark mode -->
+    <button class="theme-toggle" aria-label="Tema değiştir">🌙 Koyu Tema</button>
+
+    <!-- Main content container -->
+    <div class="container" role="main">
+        <h1>📦 Ağ Trafik Analizi</h1>
+        <p>
+            Aşağıdaki grafikler, ağ trafiğinizin detaylı analizini sunar. Protokol dağılımı, paket uzunlukları ve anomali tespiti sonuçlarını inceleyerek ağınızın davranışını daha iyi anlayabilirsiniz.
+        </p>
+
+        <!-- Protocol Distribution Section -->
+        <div class="image-section" id="protocol-distribution">
+            <h2 tabindex="0"><span class="collapse-icon">-</span>Protokol Dağılımı</h2>
+            <div class="image-content">
+                <figure>
+                    <div class="image-container">
+                        <span class="tooltip">Protokol dağılımını detaylı görüntülemek için tıklayın</span>
+                        <img src="{{ url_for('static', filename='plots/protocol_distribution.png') }}" alt="Protokol Dağılımı" onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading')">
+                    </div>
+                    <figcaption>
+                        Bu grafik, ağ trafiğinizdeki protokollerin (ör. TCP, UDP, ICMP) dağılımını gösterir. Her protokolün yüzdesi, ağınızın hangi tür trafiğe ağırlık verdiğini ortaya koyar. Örneğin, yüksek UDP trafiği video akışı veya oyun aktivitelerini işaret edebilir.
+                    </figcaption>
+                </figure>
+            </div>
+        </div>
+
+        <!-- Packet Length Histogram Section -->
+        <div class="image-section" id="packet-length">
+            <h2 tabindex="0"><span class="collapse-icon">-</span>Paket Uzunluğu Histogramı</h2>
+            <div class="image-content">
+                <figure>
+                    <div class="image-container">
+                        <span class="tooltip">Paket uzunluğu dağılımını detaylı görüntülemek için tıklayın</span>
+                        <img src="{{ url_for('static', filename='plots/packet_length_hist.png') }}" alt="Paket Uzunluğu Histogramı" onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading')">
+                    </div>
+                    <figcaption>
+                        Bu histogram, ağınızdaki paketlerin uzunluk dağılımını temsil eder. Küçük paketler genellikle kontrol mesajlarını, büyük paketler ise veri aktarımlarını (ör. dosya indirme) gösterir. Anormal uzunluklar potansiyel tehditleri işaret edebilir.
+                    </figcaption>
+                </figure>
+            </div>
+        </div>
+
+        <!-- Anomaly Scatter Section -->
+        <div class="image-section" id="anomaly-scatter">
+            <h2 tabindex="0"><span class="collapse-icon">-</span>Anomali Tespiti</h2>
+            <div class="image-content">
+                <figure>
+                    <div class="image-container">
+                        <span class="tooltip">Anomali noktalarını detaylı görüntülemek için tıklayın</span>
+                        <img src="{{ url_for('static', filename='plots/anomaly_scatter.png') }}" alt="Anomali Tespiti" onload="this.classList.add('loaded'); this.parentElement.classList.remove('loading')">
+                    </div>
+                    <figcaption>
+                        Bu dağılım grafiği, ağ trafiğinizdeki anormal aktiviteleri tespit eder. Her nokta bir paketi temsil eder; kırmızı veya ayrık noktalar, Isolation Forest veya One-Class SVM gibi yöntemlerle tespit edilen anomalileri gösterir, örneğin DDoS saldırıları veya şüpheli veri akışları.
+                    </figcaption>
+                </figure>
+            </div>
+        </div>
+
+        <!-- Navigation link -->
+        <a href="/" class="nav-link"><span class="tooltip">Ana sayfaya geri dön</span>⬅ Ana Sayfa</a>
+    </div>
+
+    <!-- Modal for zoomed images -->
+    <div class="modal" id="image-modal" role="dialog" aria-label="Image Zoom Modal">
+        <button class="modal-close" aria-label="Modali kapat">×</button>
+        <img src="" alt="">
+    </div>
+
+    <script>
+        // Add loading class to image containers initially
+        document.querySelectorAll('.image-container').forEach(container => {
+            container.classList.add('loading');
+        });
+
+        // Toggle dark mode
+        const themeToggle = document.querySelector('.theme-toggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            themeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️ Açık Tema' : '🌙 Koyu Tema';
+            // Update collapse icons for dark mode
+            document.querySelectorAll('.collapse-icon').forEach(icon => {
+                icon.style.color = document.body.classList.contains('dark-mode') ? '#90cdf4' : '#007bff';
+            });
+        });
+
+        // Collapsible image sections
+        document.querySelectorAll('.image-section h2').forEach(header => {
+            header.addEventListener('click', () => {
+                const section = header.parentElement;
+                section.classList.toggle('collapsed');
+                const icon = header.querySelector('.collapse-icon');
+                icon.textContent = section.classList.contains('collapsed') ? '+' : '-';
+            });
+            header.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    header.click();
+                }
+            });
+        });
+
+        // Image zoom modal
+        const modal = document.getElementById('image-modal');
+        const modalImg = modal.querySelector('img');
+        const modalClose = modal.querySelector('.modal-close');
+
+        document.querySelectorAll('.image-container img').forEach(img => {
+            img.addEventListener('click', () => {
+                modalImg.src = img.src;
+                modalImg.alt = img.alt;
+                modal.style.display = 'flex';
+            });
+        });
+
+        modalClose.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Keyboard accessibility for modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.style.display === 'flex') {
+                modal.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
